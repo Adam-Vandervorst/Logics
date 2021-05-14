@@ -34,6 +34,14 @@ enum Prep:
     val pairs = vars.zip(1 to vars.size)
     return (pairs.toMap, pairs.map(_.swap).toMap)
 
+  def pretty(): String  = this match
+    case True => "1"
+    case False => "0"
+    case Var(s) => s
+    case Not(p) => "!" + p.pretty()
+    case p: And => "(" + p.forrest[And]().map(_.pretty()).mkString(" * ") + ")"
+    case p: Or => "(" + p.forrest[Or]().map(_.pretty()).mkString(" + ") + ")"
+
   def to_dot(id: BigInt = 1): String = this match
     case True => s"$id [label=TRUE];\n"
     case False => s"$id [label=FALSE];\n"

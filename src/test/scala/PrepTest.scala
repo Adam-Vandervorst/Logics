@@ -21,6 +21,8 @@ class PrepTest extends AnyFunSuite:
     assert(rmap == Map(1 -> "x", 2 -> "y"))
   }
 
+  test("simple expr pretty") (pending)
+  
   test("simple expr to_dot") (pending)
 
   test("simple expr simplify") {

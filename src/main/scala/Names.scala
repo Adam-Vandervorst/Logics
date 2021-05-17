@@ -1,4 +1,4 @@
-import scala.compiletime.ops.int.S
+import scala.compiletime.ops.int.{S, -}
 import scala.reflect.ClassTag
 
 
@@ -35,3 +35,7 @@ enum Names(val data: Seq[String]):
   def bind[T : ClassTag](n: Int)(using bind_map: String => T) =
     val vars = this.data.take(n).map(bind_map)
     Tuple.fromArray(vars.toArray).asInstanceOf[Mul[n.type, T]]
+
+  def tupleSlice[A <: Int, B <: Int, T : ClassTag](using begin: ValueOf[A], end: ValueOf[B], bind_map: String => T) =
+    val vars = this.data.slice(begin.value, end.value).map(bind_map)
+    Tuple.fromArray(vars.toArray).asInstanceOf[Mul[B - A , T]]

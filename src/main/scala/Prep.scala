@@ -6,15 +6,10 @@ def fix[A](f: A => A)(v: A, prev: Option[A] = None): A =
   if (prev.isEmpty || v != prev.get) fix(f)(f(v), Some(v))
   else v
 
-enum Prep:
-  case True
-  case False
-  case Var(name: String)
-  case Not(p: Prep)
-  case And(p: Prep, q: Prep)
-  case Or(p: Prep, q: Prep)
+sealed trait Prep extends ALogic
 
-  def eval(vars: Map[String, Boolean] = Map()): Boolean = this match
+extension (t: AExpr[Prep])
+  def eval(vars: Map[String, Boolean] = Map()): Boolean = t match
     case True => true
     case False => false
     case Var(s) => vars(s)
@@ -22,27 +17,7 @@ enum Prep:
     case And(p, q) => p.eval(vars) && q.eval(vars)
     case Or(p, q) => p.eval(vars) || q.eval(vars)
 
-  def vars(): SortedSet[String] = this match
-    case True | False => SortedSet()
-    case Var(s) => SortedSet(s)
-    case Not(p) => p.vars()
-    case And(p, q) => p.vars() | q.vars()
-    case Or(p, q) => p.vars() | q.vars()
-
-  def vars_mappings(): (Map[String, Int], Map[Int, String]) =
-    val vars = this.vars()
-    val pairs = vars.zip(1 to vars.size)
-    return (pairs.toMap, pairs.map(_.swap).toMap)
-
-  def pretty(): String  = this match
-    case True => "1"
-    case False => "0"
-    case Var(s) => s
-    case Not(p) => "!" + p.pretty()
-    case p: And => "(" + p.forrest[And]().map(_.pretty()).mkString(" * ") + ")"
-    case p: Or => "(" + p.forrest[Or]().map(_.pretty()).mkString(" + ") + ")"
-
-  def to_dot(id: BigInt = 1): String = this match
+  def to_dot(id: BigInt = 1): String = t match
     case True => s"$id [label=TRUE];\n"
     case False => s"$id [label=FALSE];\n"
     case Var(s) => s"$id [label=$s];\n"
@@ -50,10 +25,10 @@ enum Prep:
       p.to_dot(2*id)
     case And(p, q) => s"$id [label=AND];\n$id -> {${2*id}, ${2*id+1}};\n" ++
       p.to_dot(2*id) ++ q.to_dot(2*id+1)
-    case Or(p, q) => s"$id [label=AND];\n$id -> {${2*id}, ${2*id+1}};\n" ++
+    case Or(p, q) => s"$id [label=OR];\n$id -> {${2*id}, ${2*id+1}};\n" ++
       p.to_dot(2*id) ++ q.to_dot(2*id+1)
 
-  private def reduce(): Prep = this match
+  private def reduce(): AExpr[Prep] = t match
     case Not(Not(p)) => p.reduce()
     case Not(True) => False
     case Not(False) => True
@@ -76,9 +51,9 @@ enum Prep:
     case Or(p, q) => Or(p.reduce(), q.reduce())
     case x => x
 
-  def simplify(): Prep = fix[Prep](_.reduce())(this)
+  def simplify(): AExpr[Prep] = fix[AExpr[Prep]](_.reduce())(t)
 
-  private def demorgan(): Prep = this match
+  private def demorgan(): AExpr[Prep] = t match
     case Not(Or(p, q)) => Or(Not(p.demorgan()), Not(q.demorgan()))
     case Not(And(p, q)) => And(Not(p.demorgan()), Not(q.demorgan()))
     case Not(Not(v: Var)) => v
@@ -87,7 +62,7 @@ enum Prep:
     case Or(p, q) => Or(p.demorgan(), q.demorgan())
     case x => x
 
-  private def distribute(): Prep = this match
+  private def distribute(): AExpr[Prep] = t match
     case Or(p, And(q, r)) => And(Or(p, q), Or(p, r))
     case Or(And(p, q), r) => And(Or(p, r), Or(q, r))
     case Not(p) => Not(p.distribute())
@@ -95,16 +70,8 @@ enum Prep:
     case Or(p, q) => Or(p.distribute(), q.distribute())
     case x => x
 
-  def forrest[Flat <: Prep : ClassTag](): Set[Prep] = this match
-    case p: Flat => p match
-      case Not(a) => a.forrest[Flat]()
-      case And(a, b) => a.forrest[Flat]() | b.forrest[Flat]()
-      case Or(a, b) => a.forrest[Flat]() | b.forrest[Flat]()
-      case x => Set(x)
-    case q => Set(q)
-
   def cnf(index_map: Map[String, Int]): Set[Set[Int]] =
-    val and_expr = fix[Prep](_.distribute())(fix[Prep](_.demorgan())(this))
+    val and_expr = fix[AExpr[Prep]](_.distribute())(fix[AExpr[Prep]](_.demorgan())(t))
     val clauses = and_expr.forrest[And]().map(_.forrest[Or]())
     val clean_clauses = clauses
       .filterNot(_.contains(True)) // remove true clauses
@@ -116,3 +83,10 @@ enum Prep:
       case _ => throw IllegalStateException()
     }))
     return int_clauses
+
+case class Var(override val name: String) extends AVar[Prep](name)
+case object True extends AAtom[Prep] with Show("1", "⊤", "true", "TRUE")
+case object False extends AAtom[Prep] with Show("0", "⊥", "false", "FALSE")
+case class Not(override val p: AExpr[Prep]) extends AUOp[Prep](p) with Show("!", "¬", "!", "NOT")
+case class And(p: AExpr[Prep], q: AExpr[Prep]) extends ABOp[Prep](p, q) with Show(" * ", "∧", " && ", "AND")
+case class Or(p: AExpr[Prep], q: AExpr[Prep]) extends ABOp[Prep](p, q) with Show(" + ", "∨", " || ", "OR")

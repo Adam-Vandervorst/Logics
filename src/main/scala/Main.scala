@@ -1,21 +1,14 @@
-import Prep._
+import LTL._
 import Names._
 
-extension (p: Prep)
-  def unary_! : Prep = Not(p)
-  def *(q: Prep): Prep = And(p, q)
-  def +(q: Prep): Prep = Or(p, q)
-
-given (String => Prep) = Prep.Var.apply
+given (String => LTL) = LTL.Var.apply
 
 @main def print_expr = 
-  val (a, b, c, d, e, f) = latin.bind[Prep](6)
-  val g = !b * (!f + c + a) * (d + (!e * c * b)) * (e + !(c * a)) + (!e * f)
+  val (rain, clouded, sunny) = (Var("rain"), Var("clouded"), Var("sunny"))
 
-  val (fmap, rmap) = g.vars_mappings()
-  val solution = dpll(g.cnf(fmap)).get
-  val var_config = solution.map(i => (rmap(Math.abs(i)), i > 0)).toMap
+  val progression = List(Set("rain", "clouded"), Set("rain", "clouded"), Set("rain", "sunny"), Set("sunny"))
+  val has_rainbow = F(And(rain, sunny))
+  val always_clouded = G(clouded)
 
-  println(g.pretty())
-  println(var_config)
-  println(g.eval(var_config))
+  println(has_rainbow.eval(progression))
+  println(always_clouded.eval(progression))

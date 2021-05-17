@@ -2,7 +2,7 @@ import scala.collection.immutable.SortedSet
 import org.scalatest.funsuite.AnyFunSuite
 
 
-class SATTest extends AnyFunSuite:
+class PrepSATTest extends AnyFunSuite:
   val ps1 = Set(
     Set(-1, -2),
     Set(-1, 2, -3),

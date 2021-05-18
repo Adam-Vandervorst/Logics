@@ -17,7 +17,7 @@ class Kripke():
       case None => Set(y)
     adjacency.update(x, new_val)
     adjacency.getOrElseUpdate(y, Set())
-  
+
   def connected(x: State, y: State): Boolean =
     adjacency(x).contains(y)
 
@@ -29,12 +29,20 @@ class Kripke():
     adjacency.mapValuesInPlace((s, ss) => ss.incl(s))
 
   def add_symmetric(): Unit =
-    for ((a, bs) <- adjacency; b <- bs) connect(b, a)
+    for ((a, bs) <- adjacency; b <- bs)
+      connect(b, a)
 
   def add_transitive(): Unit =
     for (k <- states; i <- states; j <- states;
          if (connected(i, k) && connected(k, j)))
       connect(i, j)
+
+  def pretty(): String =
+    adjacency.zipWithIndex.map((p, i) => s"state ${i}\n" ++
+      s"  name: ${p._1.name}\n" ++
+      s"  variables: ${p._1.variables.mkString(", ")}\n" ++
+      s"  connected to: ${p._2.map(_.name).mkString(", ")}\n"
+    ).mkString("\n")
 
   def to_dot(): String =
     (Seq("node [shape=Mrecord]") ++

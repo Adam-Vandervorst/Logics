@@ -11,5 +11,6 @@
 
   M.path(false, q0, q1, q2)
   M.add_transitive()
+  M.add_reflexive()
   
-  println(M.to_dot())
+  println(M.pretty())

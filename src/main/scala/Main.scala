@@ -9,7 +9,7 @@
 
   val M = Kripke()
 
-  M.path(true, q0, q1, q2)
-  M.add_reflexive()
-
+  M.path(false, q0, q1, q2)
+  M.add_transitive()
+  
   println(M.to_dot())

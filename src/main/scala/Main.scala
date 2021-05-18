@@ -1,14 +1,15 @@
-import LTL._
-import Names._
+@main def print_expr =
+  val (c, t) =
+    ("colored",
+     "textured")
+  val (q0, q1, q2) =
+    (State("q0", Set(c, t), true),
+     State("q1", Set(t)),
+     State("q2", Set(c)))
 
-given (String => LTL) = LTL.Var.apply
+  val M = Kripke()
 
-@main def print_expr = 
-  val (rain, clouded, sunny) = (Var("rain"), Var("clouded"), Var("sunny"))
+  M.path(true, q0, q1, q2)
+  M.add_reflexive()
 
-  val progression = List(Set("rain", "clouded"), Set("rain", "clouded"), Set("rain", "sunny"), Set("sunny"))
-  val has_rainbow = F(And(rain, sunny))
-  val always_clouded = G(clouded)
-
-  println(has_rainbow.eval(progression))
-  println(always_clouded.eval(progression))
+  println(M.to_dot())

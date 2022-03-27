@@ -10,11 +10,11 @@ enum LTL:
   def eval(path: List[Set[String]]): Boolean = this match
     case True => true
     case False => false
-    case Var(s) => path(0).contains(s)
+    case Var(s) => path.head.contains(s)
     case Not(p) => !p.eval(path)
     case And(p, q) => p.eval(path) && q.eval(path)
     case X(p) => p.eval(path.drop(1))
-    case U(p, q) => (0 until path.size).find(i => q.eval(path.drop(i))) match
+    case U(p, q) => path.indices.find(i => q.eval(path.drop(i))) match
       case Some(i) => (0 until i).forall(j => p.eval(path.drop(j)))
       case None => false
 

@@ -2,10 +2,6 @@ import scala.collection.immutable.SortedSet
 import scala.reflect.ClassTag
 
 
-def fix[A](f: A => A)(v: A, prev: Option[A] = None): A =
-  if (prev.isEmpty || v != prev.get) fix(f)(f(v), Some(v))
-  else v
-
 enum Prep:
   case True
   case False
@@ -32,7 +28,7 @@ enum Prep:
   def vars_mappings(): (Map[String, Int], Map[Int, String]) =
     val vars = this.vars()
     val pairs = vars.zip(1 to vars.size)
-    return (pairs.toMap, pairs.map(_.swap).toMap)
+    (pairs.toMap, pairs.map(_.swap).toMap)
 
   def pretty(): String  = this match
     case True => "1"
@@ -50,7 +46,7 @@ enum Prep:
       p.to_dot(2*id)
     case And(p, q) => s"$id [label=AND];\n$id -> {${2*id}, ${2*id+1}};\n" ++
       p.to_dot(2*id) ++ q.to_dot(2*id+1)
-    case Or(p, q) => s"$id [label=AND];\n$id -> {${2*id}, ${2*id+1}};\n" ++
+    case Or(p, q) => s"$id [label=OR];\n$id -> {${2*id}, ${2*id+1}};\n" ++
       p.to_dot(2*id) ++ q.to_dot(2*id+1)
 
   private def reduce(): Prep = this match
@@ -110,9 +106,8 @@ enum Prep:
       .filterNot(_.contains(True)) // remove true clauses
       .map(_.filterNot(_ == False)) // remove false variables
       .filterNot(_.isEmpty) // remove empty clauses
-    val int_clauses = clean_clauses.map(_.map({
+    clean_clauses.map(_.map {
       case Not(Var(s)) => -index_map(s)
       case Var(s) => index_map(s)
       case _ => throw IllegalStateException()
-    }))
-    return int_clauses
+    })

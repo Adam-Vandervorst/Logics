@@ -1,12 +1,8 @@
-val scala3Version = "3.0.0-RC3"
-
 lazy val root = project
   .in(file("."))
   .settings(
     name := "Logics",
-    version := "0.1.0",
-
-    scalaVersion := scala3Version,
-
-    libraryDependencies += "org.scalatest" %% "scalatest" % "3.2.8" % "test"
+    version := "0.1.1",
+    scalaVersion := "3.1.3-RC1-bin-20220218-29f9d33-NIGHTLY",
+    libraryDependencies += "org.scalatest" %% "scalatest" % "3.2.11" % "test"
   )

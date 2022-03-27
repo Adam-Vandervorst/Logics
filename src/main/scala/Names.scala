@@ -1,18 +1,10 @@
-import scala.compiletime.ops.int.S
 import scala.reflect.ClassTag
 
-
-type Mul[N <: Int, T] =
-  N match
-    case 0 => EmptyTuple
-    case S[prev] => Tuple.Concat[Mul[prev, T], Tuple1[T]]
-
 private def toLetters(n: Int): String =
-  if (n == 0) "A"
-  else if (n < 0) throw RuntimeException()
-  else List.unfold(n)(i =>
-    if (i > 0) Some(Names.Latin.data(i % 26), i/26) else None
-  ).mkString("")
+  val l = Names.Latin.data(n % 26)
+  if n > 26 then toLetters(n/26) + l
+  else if n == 26 then "A" + l
+  else l
 
 enum Names(val data: Seq[String]):
   case latin extends Names("abcdefghijklmnopqrstuvwxyz".map(_.toString))
@@ -32,6 +24,6 @@ enum Names(val data: Seq[String]):
   case Numbers extends Names(LazyList.from(0).map(_.toString))
   case Letters extends Names(LazyList.unfold(0)(n => Some((toLetters(n), n + 1))))
 
-  def bind[T : ClassTag](n: Int)(using bind_map: String => T) =
-    val vars = this.data.take(n).map(bind_map)
+  def bind[T : ClassTag](n: Int)(using f: String => T): Mul[n.type, T] =
+    val vars = this.data.take(n).map(f)
     Tuple.fromArray(vars.toArray).asInstanceOf[Mul[n.type, T]]

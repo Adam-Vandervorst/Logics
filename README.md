@@ -3,7 +3,7 @@ This repository aims to provide a playground for different formal logics, which 
 All code here is for educational purposes only and should not be used in production.
 
 ### Supported logics
-- Prepositional logic P(¬, ∨, ∧)
+- Propositional logic P(¬, ∨, ∧)
   - Pretty printing
   - Evaluation in variables
   - Poor man's simplification

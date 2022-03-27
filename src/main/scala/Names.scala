@@ -24,6 +24,8 @@ enum Names(val data: Seq[String]):
   case Numbers extends Names(LazyList.from(0).map(_.toString))
   case Letters extends Names(LazyList.unfold(0)(n => Some((toLetters(n), n + 1))))
 
+  case NATO extends Names("Alfa Bravo Charlie Delta Echo Foxtrot Golf Hotel India Juliett Kilo Lima Mike November Oscar Papa Quebec Romeo Sierra Tango Uniform Victor Whiskey X-ray Yankee Zulu".split(" ").toSeq)
+
   def bind[T : ClassTag](n: Int)(using f: String => T): Mul[n.type, T] =
     val vars = this.data.take(n).map(f)
     Tuple.fromArray(vars.toArray).asInstanceOf[Mul[n.type, T]]

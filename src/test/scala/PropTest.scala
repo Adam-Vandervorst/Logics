@@ -1,9 +1,9 @@
 import scala.collection.immutable.SortedSet
 import org.scalatest.funsuite.AnyFunSuite
-import Prep._
+import Prop._
 
 
-class PrepTest extends AnyFunSuite:
+class PropTest extends AnyFunSuite:
   val e1 = And(Or(Var("x"), False), Not(Var("y")))
 
   test("e1 positiev negative eval") {

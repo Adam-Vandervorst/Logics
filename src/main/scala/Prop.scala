@@ -2,13 +2,13 @@ import scala.collection.immutable.SortedSet
 import scala.reflect.ClassTag
 
 
-enum Prep:
+enum Prop:
   case True
   case False
   case Var(name: String)
-  case Not(p: Prep)
-  case And(p: Prep, q: Prep)
-  case Or(p: Prep, q: Prep)
+  case Not(p: Prop)
+  case And(p: Prop, q: Prop)
+  case Or(p: Prop, q: Prop)
 
   def eval(vars: Map[String, Boolean] = Map()): Boolean = this match
     case True => true
@@ -49,7 +49,7 @@ enum Prep:
     case Or(p, q) => s"$id [label=OR];\n$id -> {${2*id}, ${2*id+1}};\n" ++
       p.to_dot(2*id) ++ q.to_dot(2*id+1)
 
-  private def reduce(): Prep = this match
+  private def reduce(): Prop = this match
     case Not(Not(p)) => p.reduce()
     case Not(True) => False
     case Not(False) => True
@@ -72,9 +72,9 @@ enum Prep:
     case Or(p, q) => Or(p.reduce(), q.reduce())
     case x => x
 
-  def simplify(): Prep = fix[Prep](_.reduce())(this)
+  def simplify(): Prop = fix[Prop](_.reduce())(this)
 
-  private def demorgan(): Prep = this match
+  private def demorgan(): Prop = this match
     case Not(Or(p, q)) => Or(Not(p.demorgan()), Not(q.demorgan()))
     case Not(And(p, q)) => And(Not(p.demorgan()), Not(q.demorgan()))
     case Not(Not(v: Var)) => v
@@ -83,7 +83,7 @@ enum Prep:
     case Or(p, q) => Or(p.demorgan(), q.demorgan())
     case x => x
 
-  private def distribute(): Prep = this match
+  private def distribute(): Prop = this match
     case Or(p, And(q, r)) => And(Or(p, q), Or(p, r))
     case Or(And(p, q), r) => And(Or(p, r), Or(q, r))
     case Not(p) => Not(p.distribute())
@@ -91,7 +91,7 @@ enum Prep:
     case Or(p, q) => Or(p.distribute(), q.distribute())
     case x => x
 
-  def forrest[Flat <: Prep : ClassTag](): Set[Prep] = this match
+  def forrest[Flat <: Prop : ClassTag](): Set[Prop] = this match
     case p: Flat => p match
       case Not(a) => a.forrest[Flat]()
       case And(a, b) => a.forrest[Flat]() | b.forrest[Flat]()
@@ -100,7 +100,7 @@ enum Prep:
     case q => Set(q)
 
   def cnf(index_map: Map[String, Int]): Set[Set[Int]] =
-    val and_expr = fix[Prep](_.distribute())(fix[Prep](_.demorgan())(this))
+    val and_expr = fix[Prop](_.distribute())(fix[Prop](_.demorgan())(this))
     val clauses = and_expr.forrest[And]().map(_.forrest[Or]())
     val clean_clauses = clauses
       .filterNot(_.contains(True)) // remove true clauses
@@ -112,7 +112,7 @@ enum Prep:
       case _ => throw IllegalStateException()
     })
 
-object Prep:
-  def Then(p: Prep, q: Prep): Prep =  Or(Not(p), q)
-  def Iff(p: Prep, q:Prep): Prep = And(Then(p, q), Then(q, p))
+object Prop:
+  def Then(p: Prop, q: Prop): Prop =  Or(Not(p), q)
+  def Iff(p: Prop, q: Prop): Prop = And(Then(p, q), Then(q, p))
   

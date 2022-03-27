@@ -111,3 +111,8 @@ enum Prep:
       case Var(s) => index_map(s)
       case _ => throw IllegalStateException()
     })
+
+object Prep:
+  def Then(p: Prep, q: Prep): Prep =  Or(Not(p), q)
+  def Iff(p: Prep, q:Prep): Prep = And(Then(p, q), Then(q, p))
+  

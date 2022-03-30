@@ -11,6 +11,8 @@ All code here is for educational purposes only and should not be used in product
   - DPLL SAT solving
 - LTL
   - Evaluation over a finite path
+- CTL
+  - model checking over a Kripke model
 ### Planned logics
 - [relevance logic](https://en.wikipedia.org/wiki/Relevance_logic)
 - [CD logic](https://dl.acm.org/doi/10.5555/926534)

@@ -1,8 +1,6 @@
 import scala.collection.mutable
 
-type Var = String
-
-case class State(name: String, variables: Set[Var], initial: Boolean = false)
+case class State(name: String, variables: Set[String], initial: Boolean = false)
 
 class Kripke:
   val adjacency: mutable.Map[State, Set[State]] = mutable.Map()
@@ -34,6 +32,9 @@ class Kripke:
     for k <- states; i <- states; j <- states
         if connected(i, k) && connected(k, j) do
       connect(i, j)
+
+  def ex_preimg(sts: Iterable[State]): Iterable[State] =
+    states.filter(s => sts.exists(st => connected(s, st)))
 
   def overview(): String =
     adjacency.zipWithIndex.map((p, i) => s"state $i\n" ++

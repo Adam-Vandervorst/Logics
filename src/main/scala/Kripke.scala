@@ -1,8 +1,7 @@
 import scala.collection.mutable
 
-type Var = String
 
-case class State(name: String, variables: Set[Var], initial: Boolean = false)
+case class State(name: String, variables: Set[String], initial: Boolean = false)
 
 class Kripke:
   val adjacency: mutable.Map[State, Set[State]] = mutable.Map()

@@ -75,8 +75,8 @@ enum Prop:
   def simplify(): Prop = fix[Prop](_.reduce())(this)
 
   private def demorgan(): Prop = this match
-    case Not(Or(p, q)) => Or(Not(p.demorgan()), Not(q.demorgan()))
-    case Not(And(p, q)) => And(Not(p.demorgan()), Not(q.demorgan()))
+    case Not(Or(p, q)) => And(Not(p.demorgan()), Not(q.demorgan()))
+    case Not(And(p, q)) => Or(Not(p.demorgan()), Not(q.demorgan()))
     case Not(Not(v: Var)) => v
     case Not(p) => Not(p.demorgan())
     case And(p, q) => And(p.demorgan(), q.demorgan())

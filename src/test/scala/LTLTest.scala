@@ -51,3 +51,12 @@ class LTLTest extends AnyFunSuite:
     // (True U !"p0") R (True U (("p2" /\ X("p1")) \/ (!"p2" /\ X(!"p1"))))
     // (True U ((True U !"p0") R (True U ((!"p2" \/ X("p1")) /\ (X(!"p1") \/ "p2")))))
   }
+
+  test("atomics") {
+    assert(((False R (True U "p1")) /\ (True U ("q" /\ (False R !"r")))).atomics() == Set(Var("p1"), Var("q"), Var("r")))
+  }
+
+  test("subformulas") {
+    assert(e3.subformulas() == Seq[LTL]((True U (!(!(True U !"a")) /\ X("c"))), True, (!(!(True U !"a")) /\ X("c")), !(!(True U !"a")), !(True U !"a"), (True U !"a"), True, !"a", "a", X("c"), "c"))
+    assert(((False R (True U "p1")) /\ (True U ("q" /\ (False R !"r")))).subformulas().toSet == Set[LTL](("q" /\ (False R !"r")), (True U "p1"), ((False R (True U "p1")) /\ (True U ("q" /\ (False R !"r")))), (False R (True U "p1")), "q", !"r", (True U ("q" /\ (False R !"r"))), "p1", (False R !"r"), "r", True, False))
+  }

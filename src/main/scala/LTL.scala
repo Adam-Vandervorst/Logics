@@ -88,6 +88,32 @@ enum LTL:
 
   def simplify(): LTL = fix[LTL](_.reduce())(this)
 
+  def atomics(): Set[LTL] = this match
+    case True => Set()
+    case False => Set()
+    case Var(s) => Set(Var(s))
+    case Not(p) => p.atomics()
+    case And(p, q) => p.atomics() ++ q.atomics()
+    case Or(p: LTL, q: LTL) => p.atomics() ++ q.atomics()
+    case Next(p: LTL) => p.atomics()
+    case Until(p: LTL, q: LTL) => p.atomics() ++ q.atomics()
+    case Release(p: LTL, q: LTL) => p.atomics() ++ q.atomics()
+
+  def subformulas(): LazyList[LTL] = this #:: (this match
+    case True => LazyList()
+    case False => LazyList()
+    case Var(s) => LazyList()
+    case Not(p) => p.subformulas()
+    case And(p, q) => p.subformulas() ++ q.subformulas()
+    case Or(p: LTL, q: LTL) => p.subformulas() ++ q.subformulas()
+    case Next(p: LTL) => p.subformulas()
+    case Until(p: LTL, q: LTL) => p.subformulas() ++ q.subformulas()
+    case Release(p: LTL, q: LTL) => p.subformulas() ++ q.subformulas())
+
+  def neg: LTL = this match
+    case Not(p) => p
+    case p => Not(p)
+
 object LTL:
   def Finally(p: LTL): LTL = Until(True, p)
   def Globally(p: LTL): LTL = Not(Finally(Not(p)))
@@ -95,6 +121,15 @@ object LTL:
   def Strong(p: LTL, q: LTL): LTL = Until(q, And(p, q))
   def Then(p: LTL, q: LTL): LTL =  Or(Not(p), q)
   def Iff(p: LTL, q: LTL): LTL = And(Then(p, q), Then(q, p))
+
+  object Literal:
+    def apply(name: String): LTL = if name.head == '!'
+      then Not(Var(name.tail))
+      else Var(name)  
+    def unapply(f: LTL): Option[String] =  f match
+      case Var(p) => Some(p)
+      case Not(Var(p)) => Some(s"!$p")
+      case _ => None
 
   object DSL:
     given Conversion[String, Var] = Var.apply

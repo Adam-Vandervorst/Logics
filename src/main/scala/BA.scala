@@ -1,42 +1,23 @@
-import scala.collection.mutable
+import be.adamv.picograph.graphs.DNIELG.{DNIELG, given}
+import be.adamv.picograph.{Rooted, nodeId}
 
-class BA[Label]:
-  opaque type State = Int
-  val adjacency: mutable.Map[State, Set[State]] = mutable.Map()
-  val labeling: mutable.Map[(State, State), Set[Label]] = mutable.Map().withDefaultValue(Set())
-  private var next_id = 0
+class BA[Prop]:
+  private val g = DNIELG[Set[Prop]]()
+  private given r: Rooted[g.type, State] with
+    extension (ev: g.type)
+      def root: State = init
 
-  val init: State = newNode()
+  opaque type State = g.Node
+  val init: State = g.newNode()
 
-  def newNode(): State =
-    val node = next_id
-    next_id += 1
-    adjacency(node) = Set()
-    node
-
-  def connect(src: State, dst: State, labels: Set[Label]): Unit =
-    adjacency(src) += dst
-    labeling((src, dst)) ++= labels
-
-  def states: Iterable[State] = adjacency.keys
-  def proper_states: Iterable[State] = adjacency.keys.filter(_ > 0)
-  def sinks: Iterable[State] = adjacency.collect{ case (k, vs) if vs == Set(k) => k }
+  inline def newState(): State = g.newNode()
+  inline def states: Iterator[State] = g.nodeIt
+  inline def proper_states: Iterator[State] = r.nonRootNodeIt(g.asInstanceOf)
+  inline def connect(src: State, dst: State, props: Set[Prop]): Unit = g.connect(src, dst, props)
 
   def plot(): Unit =
-    for (n, nbs) <- adjacency
-        b <- nbs do
-      println(s"$n -> $b [label=\"${labeling((n, b)).mkString(" ")}\"];")
-
-  def incoming(s: State): Set[State] =
-    adjacency.collect{case (k, vs) if vs.contains(s) => k}.toSet
-
-  /*
-  case class Merge(a: State, b: State)
-  def rewrite(): Unit =
-    for a <- states
-        b <- states
-        if a < b && adjacency(a) == adjacency(b)
-        if (incoming(a) intersect incoming(b)).forall(i => labeling(i, a) == labeling(i, b))
-    yield
-      Merge(a, b)
-   */
+    println(s"${init.nodeId} [peripheries=2];")
+    for n <- r.nonRootNodeIt(g) do
+      println(s"${n.nodeId};")
+    for (s, ls, t) <- g.edgeIt do
+      println(s"${s.nodeId} -> ${t.nodeId} [label=\"${ls.mkString(" ")}\"];")

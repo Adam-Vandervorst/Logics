@@ -126,7 +126,7 @@ object LTL:
     def apply(name: String): LTL = if name.head == '!'
       then Not(Var(name.tail))
       else Var(name)  
-    def unapply(f: LTL): Option[String] =  f match
+    def unapply(f: LTL): Option[String] = f match
       case Var(p) => Some(p)
       case Not(Var(p)) => Some(s"!$p")
       case _ => None

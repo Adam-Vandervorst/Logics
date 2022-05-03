@@ -9,7 +9,7 @@ def create_graph(formula: LTL, plot: Boolean = false): BA[String] =
 
   def expand(curr: Set[LTL], old: Set[LTL], next: Set[LTL], parent: ba.State): Unit =
     if curr.isEmpty then
-      if plot then println("digraph {"); ba.plot(); println("}")
+      if plot then {println("digraph {"); ba.plot(); println("}")}
       val labels = old.collect{ case Literal(n) => n }
       ba.proper_states.find(q => following(q) == next && now(q) == old) match
         case Some(q) => ba.connect(parent, q, labels)
@@ -55,7 +55,7 @@ def create_graph(formula: LTL, plot: Boolean = false): BA[String] =
     println(s"nnf: $formula")
     println(s"fin: $finals")
     println(s"now: $now")
-  
+
   ba
 
 
@@ -82,9 +82,10 @@ def create_graph(formula: LTL, plot: Boolean = false): BA[String] =
 //  ba.plot()
 //  val ba = create_graph((("p" U "q") /\ ("r" U "s")).nnf())
 //  ba.plot()
-//  val ba = create_graph(("a" R ("b" U "c")).nnf())
+  val ba = create_graph(("a" U ("b" U "c")).nnf())
 //  ba.plot()
-  val ba = create_graph((G((!"passport" \/ !"ticket") ==> X(!"board"))).nnf())
+  ba.rewriteIntoSelf()
+//  val ba = create_graph((G((!"passport" \/ !"ticket") ==> X(!"board"))).nnf())
 //  ba.plot()
 //  val ba = create_graph(("a" ==> X("b" ==> "c")).nnf())
 //  ba.plot()

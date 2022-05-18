@@ -22,18 +22,62 @@ class BA[Prop]:
     for (s, t) <- g.edgeIt do
       println(s"${s.nodeId} -> ${t.nodeId} [label=\"${g.labeling(s, t).mkString(" ")}\"];")
 
-  def rewriteIntoSelf(): Iterator[DNIELMG[Prop]] =
+
+  def rewriteSameOutgoing(): Iterator[DNIELMG[Prop]] =
     val lhs = DNIELMG[Char]()
     val l = lhs.newNodes(2)
-    lhs.connect(l(0), l(1), 'a')
-    lhs.connect(l(1), l(1), 'a')
 
-    val lpg = PatchG[Char, lhs.type](lhs)(List(C -> l(0), C -> l(1)))
+    val lpg = PatchG[Char, lhs.type](lhs)(List(C -> l(0), C -> l(1), l(0) -> l(0), l(1) -> l(1), l(0) -> C, l(1) -> C))
 
     val rhs = DNIELMG[Char]()
     val r = rhs.newNodes(1)
-    rhs.connect(r(0), r(0), 'a')
 
-    val rpg = PatchG[Char, rhs.type](rhs)(List(C -> r(0), C -> r(0)))
+    val rpg = PatchG[Char, rhs.type](rhs)(List(C -> r(0), C -> r(0), r(0) -> r(0), r(0) -> C))
 
-    RewriteRule(lpg, rpg, Set(0 -> 0, 1 -> 1)).applyIt(g)
+    RewriteRule(lpg, rpg, Set(0 -> 0, 1 -> 1, 2 -> 2, 3 -> 2, 4 -> 3, 5 -> 3)).applyIt(g)
+
+  
+  def rewriteSameIncoming(): Iterator[DNIELMG[Prop]] =
+    val lhs = DNIELMG[Char]()
+    val l = lhs.newNodes(2)
+
+    val lpg = PatchG[Char, lhs.type](lhs)(List(C -> l(0), C -> l(1), l(0) -> l(0), l(1) -> l(1), l(0) -> C, l(1) -> C))
+
+    val rhs = DNIELMG[Char]()
+    val r = rhs.newNodes(1)
+
+    val rpg = PatchG[Char, rhs.type](rhs)(List(C -> r(0), r(0) -> r(0), r(0) -> C, r(0) -> C))
+
+    RewriteRule(lpg, rpg, Set(0 -> 0, 1 -> 0, 2 -> 1, 3 -> 1, 4 -> 2, 5 -> 3)).applyIt(g)
+
+
+  def rewriteIntoSelf(): Iterator[DNIELMG[Prop]] =
+    val lhs = DNIELMG[Char]()
+    val l = lhs.newNodes(2)
+
+    val lpg = PatchG[Char, lhs.type](lhs)(List(l(0) -> l(1), l(1) -> l(1),
+                                               C -> l(0), C -> l(1),
+                                               l(0) -> C, l(1) -> C))
+
+    val rhs = DNIELMG[Char]()
+    val r = rhs.newNodes(1)
+
+    val rpg = PatchG[Char, rhs.type](rhs)(List(r(0) -> r(0), C -> r(0), C -> r(0), r(0) -> C))
+    
+    RewriteRule(lpg, rpg, Set(0 -> 0, 1 -> 0, 2 -> 1, 3 -> 2, 4 -> 3, 5 -> 3)).applyIt(g)
+
+
+  def rewriteOutSelf(): Iterator[DNIELMG[Prop]] =
+    val lhs = DNIELMG[Char]()
+    val l = lhs.newNodes(2)
+
+    val lpg = PatchG[Char, lhs.type](lhs)(List(l(0) -> l(0), l(0) -> l(1),
+                                               C -> l(0), C -> l(1),
+                                               l(0) -> C, l(1) -> C))
+
+    val rhs = DNIELMG[Char]()
+    val r = rhs.newNodes(1)
+
+    val rpg = PatchG[Char, rhs.type](rhs)(List(r(0) -> r(0), C -> r(0), r(0) -> C, r(0) -> C))
+
+    RewriteRule(lpg, rpg, Set(0 -> 0, 1 -> 0, 2 -> 1, 3 -> 1, 4 -> 2, 5 -> 3)).applyIt(g)

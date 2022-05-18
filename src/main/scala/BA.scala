@@ -1,5 +1,5 @@
 import be.adamv.picograph.graphs.DNIELMG.{DNIELMG, given}
-import be.adamv.picograph.graphs.PatchG.{PatchG, DSL, RewriteRule}
+import be.adamv.picograph.graphs.PatchG.{PatchG, C, RewriteRule}
 import be.adamv.picograph.conversions.split
 import be.adamv.picograph.nodeId
 
@@ -23,25 +23,17 @@ class BA[Prop]:
       println(s"${s.nodeId} -> ${t.nodeId} [label=\"${g.labeling(s, t).mkString(" ")}\"];")
 
   def rewriteIntoSelf(): Iterator[DNIELMG[Prop]] =
-    import language.postfixOps
-    import DSL.*
     val lhs = DNIELMG[Char]()
     val l = lhs.newNodes(2)
     lhs.connect(l(0), l(1), 'a')
     lhs.connect(l(1), l(1), 'a')
 
-    val (lpg, lpts) =
-      given pg: PatchG[Char, lhs.type](lhs)
-      (pg, Seq(<>-(l(0)), <>-(l(1))))
+    val lpg = PatchG[Char, lhs.type](lhs)(List(C -> l(0), C -> l(1)))
 
     val rhs = DNIELMG[Char]()
     val r = rhs.newNodes(1)
     rhs.connect(r(0), r(0), 'a')
 
-    val (rpg, rpts) =
-      given pg: PatchG[Char, rhs.type](rhs)
-      (pg, Seq(<>-(r(0)), <>-(r(0))))
+    val rpg = PatchG[Char, rhs.type](rhs)(List(C -> r(0), C -> r(0)))
 
-    val indexMap = Map(0 -> 0, 1 -> 1)
-    RewriteRule(lpg, rpg)(indexMap.map((r, l) => rpts(r) -> lpts(l)))
-      .applyIt(g)
+    RewriteRule(lpg, rpg, Set(0 -> 0, 1 -> 1)).applyIt(g)

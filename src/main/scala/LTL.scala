@@ -115,6 +115,10 @@ enum LTL:
     case p => Not(p)
 
 object LTL:
+  def fairness(n: Int): LTL =
+    val ps = (1 to n).map(k => Globally(Finally(Var(s"p$k"))))
+    Not(Then(ps.reduce(And(_, _)), Globally(Then(Var("q"), Finally(Var("r"))))))
+  
   def Finally(p: LTL): LTL = Until(True, p)
   def Globally(p: LTL): LTL = Not(Finally(Not(p)))
   def Weak(p: LTL, q: LTL): LTL = Release(q, Or(p, q))

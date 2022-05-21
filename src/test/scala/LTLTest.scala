@@ -14,10 +14,6 @@ class LTLTest extends AnyFunSuite:
   val e5 = X("a")
   val e6 = "a" R "c"
 
-  def fairness(n: Int): LTL =
-    val ps = (1 to n).map(k => G(F(s"p$k")))
-    !(ps.reduce(_ /\ _) ==> G("q" ==> F("r")))
-
   test("p1 positive eval") {
     assert(e1.eval(p1))
     assert(e2.eval(p1))
@@ -38,12 +34,12 @@ class LTLTest extends AnyFunSuite:
   }
 
   test("fairness") {
-    assert(!(G(F("p1")) ==> G("q" ==> F("r"))) == fairness(1))
-    assert(!(G(F("p1")) /\ G(F("p2")) /\ G(F("p3")) ==> G("q" ==> F("r"))) == fairness(3))
+    assert(!(G(F("p1")) ==> G("q" ==> F("r"))) == LTL.fairness(1))
+    assert(!(G(F("p1")) /\ G(F("p2")) /\ G(F("p3")) ==> G("q" ==> F("r"))) == LTL.fairness(3))
   }
 
   test("nnf") {
-    assert(fairness(1).nnf() == ((False R (True U "p1")) /\ (True U ("q" /\ (False R !"r")))))
+    assert(LTL.fairness(1).nnf() == ((False R (True U "p1")) /\ (True U ("q" /\ (False R !"r")))))
     assert((!G(F("p1"))).nnf() == (True U (False R !"p1")))
     assert(((X(False) /\ X(True U X("p"))) ==> "q").nnf() == True)
     // counter example:

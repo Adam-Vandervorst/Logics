@@ -70,7 +70,6 @@ def create_graph(formula: LTL, plot: Boolean = false): BA[String] =
 //  val ba = create_graph("p" U X("q"))
 //  val ba = create_graph((F("p") \/ F("q") \/ F("r")).nnf())
 //  val ba = create_graph((F("p") /\ F("q") /\ F("r")).nnf())
-//  val ba = create_graph(G("p" \/ X("q")).nnf())
 //  val ba = create_graph((!(G(F("p1")) ==> G("q" ==> F("r")))).nnf())
 //  val ba = create_graph((F(X(X("p") U "q"))).nnf())
 //  val ba = create_graph((G("p" \/ X("q"))).nnf())
@@ -80,9 +79,6 @@ def create_graph(formula: LTL, plot: Boolean = false): BA[String] =
 //  val ba = create_graph((G((!"passport" \/ !"ticket") ==> X(!"board"))).nnf())
 //  val ba = create_graph(("a" ==> X("b" ==> "c")).nnf())
 //  val ba = create_graph((("a" \/ "b") \/ ("a" /\ "b")).nnf())
+  val ba = create_graph(G(("t1" /\ F("e1")) \/ ("t2" /\ F("e2")) \/ ("t1" /\ "t2")).nnf())
 
-  val formula = LTL.fairness(3).nnf()
-  val ba = create_graph(formula)
-
-  println(ba.g.nodes.size)
-  println(MetaRewriting.Eager.winStay(ba.g, Seq(rewriteIntoSelf, rewriteSameOutgoing, rewriteSameIncoming, rewriteOutSelf)).nodes.size)
+  MetaRewriting.Eager.winStay(ba.g, Seq(rewriteIntoSelf, rewriteSameOutgoing, rewriteSameIncoming, rewriteOutSelf)).labelMap(_.mkString("&")).plot()

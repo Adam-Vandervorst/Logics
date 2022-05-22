@@ -58,6 +58,7 @@ def rewriteIntoSelf[A](g: DNIELMG[A]): Iterator[DNIELMG[A]] =
   lhs.connect(l(1), l(1), 'a')
 
   val lpg = PatchG[Char, lhs.type](lhs)(List(l(0) -> l(1), l(1) -> l(1),
+                                             l(1) -> l(0), l(0) -> l(0),
                                              C -> l(0), C -> l(1),
                                              l(0) -> C, l(1) -> C))
 
@@ -65,9 +66,9 @@ def rewriteIntoSelf[A](g: DNIELMG[A]): Iterator[DNIELMG[A]] =
   val r = rhs.newNodes(1)
   rhs.connect(r(0), r(0), 'a')
 
-  val rpg = PatchG[Char, rhs.type](rhs)(List(r(0) -> r(0), C -> r(0), C -> r(0), r(0) -> C))
+  val rpg = PatchG[Char, rhs.type](rhs)(List(r(0) -> r(0), r(0) -> r(0), C -> r(0), C -> r(0), r(0) -> C))
 
-  RewriteRule(lpg, rpg, Set(0 -> 0, 1 -> 0, 2 -> 1, 3 -> 2, 4 -> 3, 5 -> 3)).applyIt(g)
+  RewriteRule(lpg, rpg, Set(0 -> 0, 1 -> 0, 2 -> 1, 3 -> 1, 4 -> 2, 5 -> 3, 6 -> 4, 7 -> 4)).applyIt(g)
 
 
 def rewriteOutSelf[A](g: DNIELMG[A]): Iterator[DNIELMG[A]] =
@@ -77,6 +78,7 @@ def rewriteOutSelf[A](g: DNIELMG[A]): Iterator[DNIELMG[A]] =
   lhs.connect(l(0), l(1), 'a')
 
   val lpg = PatchG[Char, lhs.type](lhs)(List(l(0) -> l(0), l(0) -> l(1),
+                                             l(1) -> l(1), l(1) -> l(0),
                                              C -> l(0), C -> l(1),
                                              l(0) -> C, l(1) -> C))
 
@@ -84,6 +86,6 @@ def rewriteOutSelf[A](g: DNIELMG[A]): Iterator[DNIELMG[A]] =
   val r = rhs.newNodes(1)
   rhs.connect(r(0), r(0), 'a')
 
-  val rpg = PatchG[Char, rhs.type](rhs)(List(r(0) -> r(0), C -> r(0), r(0) -> C, r(0) -> C))
+  val rpg = PatchG[Char, rhs.type](rhs)(List(r(0) -> r(0), r(0) -> r(0), C -> r(0), r(0) -> C, r(0) -> C))
 
-  RewriteRule(lpg, rpg, Set(0 -> 0, 1 -> 0, 2 -> 1, 3 -> 1, 4 -> 2, 5 -> 3)).applyIt(g)
+  RewriteRule(lpg, rpg, Set(0 -> 0, 1 -> 0, 2 -> 1, 3 -> 1, 4 -> 2, 5 -> 2, 6 -> 3, 7 -> 4)).applyIt(g)

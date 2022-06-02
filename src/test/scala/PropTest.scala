@@ -34,5 +34,5 @@ class PropTest extends AnyFunSuite:
   }
 
   test("e1 expr cnf") {
-    assert(e1.cnf(e1.vars_mappings()._1) == Set(Set(1), Set(-2)))
+    assert(e1.cnf(e1.vars_mappings()._1) == CNF(Set(Set(1), Set(-2))))
   }

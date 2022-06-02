@@ -99,20 +99,51 @@ enum Prop:
       case x => Set(x)
     case q => Set(q)
 
-  def cnf(index_map: Map[String, Int]): Set[Set[Int]] =
+  def cnf(index_map: Map[String, Int]): CNF =
     val and_expr = fix[Prop](_.distribute())(fix[Prop](_.demorgan())(this))
     val clauses = and_expr.forrest[And]().map(_.forrest[Or]())
     val clean_clauses = clauses
       .filterNot(_.contains(True)) // remove true clauses
       .map(_.filterNot(_ == False)) // remove false variables
-      .filterNot(_.isEmpty) // remove empty clauses
-    clean_clauses.map(_.map {
+    CNF(clean_clauses.map(_.map {
       case Not(Var(s)) => -index_map(s)
       case Var(s) => index_map(s)
       case _ => throw IllegalStateException()
-    })
+    }))
+
+
+object CNFS:
+  opaque type CNF = Set[Set[Int]]
+
+  extension (cnf: CNF)
+    def underlying: Set[Set[Int]] = cnf
+
+    def isVacuous: Boolean = cnf.isEmpty
+
+    def isUnsatisfiable: Boolean = cnf.exists(p => p.isEmpty)
+
+    def units: Iterator[Int] = for p <- cnf.iterator; if p.size == 1; s <- p yield s
+
+    def vars: Iterator[Int] = for p <- cnf.iterator; s <- p yield s
+
+    def withoutPure: CNF =
+      val symbol_set = cnf.flatten
+      val pure_set = symbol_set.filterNot(e => symbol_set.contains(-e))
+      cnf.filter(p => (p intersect pure_set).isEmpty)
+
+    def withoutSubsumed: CNF =
+      cnf.filterNot(p => cnf.exists(q => q < p))
+
+    def updated(symbol: Int): CNF =
+      cnf.filterNot(p => p.contains(symbol)).map(p => p.excl(-symbol))
+
+  object CNF:
+    def apply(ssi: Set[Set[Int]]): CNF = ssi
+
+    def vacuous: CNF = Set()
+export CNFS.*
+
 
 object Prop:
   def Then(p: Prop, q: Prop): Prop =  Or(Not(p), q)
   def Iff(p: Prop, q: Prop): Prop = And(Then(p, q), Then(q, p))
-  

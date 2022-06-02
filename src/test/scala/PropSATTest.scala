@@ -3,56 +3,56 @@ import org.scalatest.funsuite.AnyFunSuite
 
 
 class PropSATTest extends AnyFunSuite:
-  val ps1 = Set(
+  val ps1 = CNF(Set(
     Set(-1, -2),
     Set(-1, 2, -3),
     Set(3, -4, -5),
     Set(3, 4, -5)
-  )
+  ))
 
-  val ps2 = Set(
+  val ps2 = CNF(Set(
     Set(-1, 4),
     Set(1, 2, 4),
     Set(1, 2, 3),
     Set(-1, 2, 3),
     Set(1, -2, 3),
     Set(1, 2, -3)
-  )
+  ))
 
-  val ps3 = Set(
+  val ps3 = CNF(Set(
     Set(1, 2, 3),
     Set(1, 2, 3, 4),
     Set(1, -4)
-  )
+  ))
 
-  val ps4 = Set(
+  val ps4 = CNF(Set(
     Set(1, -2),
     Set(-1, -2)
-  )
+  ))
 
-  val ps5 = Set(
+  val ps5 = CNF(Set(
     Set(1),
     Set(-1, 2),
     Set(-2)
-  )
+  ))
 
   test("ps1 ps2 ps3 clauses remove_pure") {
-    assert(remove_pure(ps3) == Set())
-    assert(remove_pure(ps1) == Set())
-    assert(remove_pure(ps2) == Set(Set(1, 2, 3),
+    assert(ps3.withoutPure == CNF.vacuous)
+    assert(ps1.withoutPure == CNF.vacuous)
+    assert(ps2.withoutPure == CNF(Set(Set(1, 2, 3),
       Set(-1, 2, 3),
       Set(1, -2, 3),
       Set(1, 2, -3)
-    ))
+    )))
   }
 
   test("ps1 ps2 ps3 clauses remove_subsumed") {
-    assert(remove_subsumed(ps1) == ps1)
-    assert(remove_subsumed(ps2) == ps2)
-    assert(remove_subsumed(ps3) == Set(
+    assert(ps1.withoutSubsumed == ps1)
+    assert(ps2.withoutSubsumed == ps2)
+    assert(ps3.withoutSubsumed == CNF(Set(
       Set(1, 2, 3),
       Set(1, -4)
-    ))
+    )))
   }
 
   test("ps4 ps5 clauses dpll") {

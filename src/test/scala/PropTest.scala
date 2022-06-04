@@ -1,6 +1,6 @@
 import scala.collection.immutable.SortedSet
 import org.scalatest.funsuite.AnyFunSuite
-import Prop._
+import Prop.*
 
 
 class PropTest extends AnyFunSuite:
@@ -35,4 +35,16 @@ class PropTest extends AnyFunSuite:
 
   test("e1 expr cnf") {
     assert(e1.cnf(e1.vars_mappings()._1) == CNF(Set(Set(1), Set(-2))))
+  }
+
+class DNFTest extends AnyFunSuite:
+  val ps1 = DNF(Set(
+    Set(1, 2),
+    Set(1, -2),
+    Set(3, -4),
+    Set(3, 4)
+  ))
+
+  test("ps1 withoutImpure") {
+    assert(ps1.withoutImpure == DNF(Set(Set(1), Set(3))))
   }

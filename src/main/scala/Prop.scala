@@ -1,3 +1,4 @@
+import scala.annotation.targetName
 import scala.collection.immutable.SortedSet
 import scala.reflect.ClassTag
 
@@ -112,38 +113,64 @@ enum Prop:
     }))
 
 
+object Prop:
+  def Then(p: Prop, q: Prop): Prop = Or(Not(p), q)
+  def Iff(p: Prop, q: Prop): Prop = And(Then(p, q), Then(q, p))
+
+
 object CNFS:
   opaque type CNF = Set[Set[Int]]
-
-  extension (cnf: CNF)
-    def underlying: Set[Set[Int]] = cnf
-
-    def isVacuous: Boolean = cnf.isEmpty
-
-    def isUnsatisfiable: Boolean = cnf.exists(p => p.isEmpty)
-
-    def units: Iterator[Int] = for p <- cnf.iterator; if p.size == 1; s <- p yield s
-
-    def vars: Iterator[Int] = for p <- cnf.iterator; s <- p yield s
-
-    def withoutPure: CNF =
-      val symbol_set = cnf.flatten
-      val pure_set = symbol_set.filterNot(e => symbol_set.contains(-e))
-      cnf.filter(p => (p intersect pure_set).isEmpty)
-
-    def withoutSubsumed: CNF =
-      cnf.filterNot(p => cnf.exists(q => q < p))
-
-    def updated(symbol: Int): CNF =
-      cnf.filterNot(p => p.contains(symbol)).map(p => p.excl(-symbol))
 
   object CNF:
     def apply(ssi: Set[Set[Int]]): CNF = ssi
 
     def vacuous: CNF = Set()
+
+    extension (cnf: CNF)
+      def underlying: Set[Set[Int]] = cnf
+
+      def isVacuous: Boolean = cnf.isEmpty
+
+      def isUnsatisfiable: Boolean = cnf.exists(_.isEmpty)
+
+      def units: Iterator[Int] = cnf.iterator.collect{ case p if p.size == 1 => p.head }.distinct
+
+      def vars: Iterator[Int] = cnf.iterator.flatten.distinct
+
+      def pureSplit: (Set[Int], CNF) =
+        val symbol_set = cnf.flatten
+        val pure_set = symbol_set.filterNot(e => symbol_set.contains(-e))
+        (pure_set, cnf.filter(p => (p intersect pure_set).isEmpty))
+
+      def withoutDual: CNF =
+        cnf.filterNot(s => s.exists(x => s(-x)))
+
+      def withoutSubsumed: CNF =
+        cnf.filterNot(p => cnf.exists(q => q < p))
+
+      def updated(symbol: Int): CNF =
+        cnf.filterNot(p => p.contains(symbol)).map(p => p.excl(-symbol))
 export CNFS.*
 
 
-object Prop:
-  def Then(p: Prop, q: Prop): Prop =  Or(Not(p), q)
-  def Iff(p: Prop, q: Prop): Prop = And(Then(p, q), Then(q, p))
+object DNFS:
+  opaque type DNF = Set[Set[Int]]
+
+  object DNF:
+    def apply(ssi: Set[Set[Int]]): DNF = ssi
+
+    extension (dnf: DNF)
+      def underlying: Set[Set[Int]] = dnf
+
+      def isVacuous: Boolean = dnf.exists(_.isEmpty)
+
+      def blocks: Iterator[Set[Int]] = dnf.iterator
+
+      def vars: Iterator[Int] = dnf.iterator.flatten.distinct
+
+      def withoutImpure: DNF =
+        dnf.map(s => s -- dnf.flatMap(t => t.map(-_) intersect s))
+
+      def withoutSubsumed: DNF =
+        dnf.filterNot(p => dnf.exists(q => q < p))
+export DNFS.*

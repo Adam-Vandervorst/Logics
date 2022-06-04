@@ -79,6 +79,11 @@ def create_graph(formula: LTL, plot: Boolean = false): BA[String] =
 //  val ba = create_graph((G((!"passport" \/ !"ticket") ==> X(!"board"))).nnf())
 //  val ba = create_graph(("a" ==> X("b" ==> "c")).nnf())
 //  val ba = create_graph((("a" \/ "b") \/ ("a" /\ "b")).nnf())
-  val ba = create_graph(G(("t1" /\ F("e1")) \/ ("t2" /\ F("e2")) \/ ("t1" /\ "t2")).nnf())
-
-  MetaRewriting.Eager.winStay(ba.g, Seq(rewriteIntoSelf, rewriteSameOutgoing, rewriteSameIncoming, rewriteOutSelf)).labelMap(_.mkString("&")).plot()
+//  val ba = create_graph(G(("t1" /\ F("e1")) \/ ("t2" /\ F("e2")) \/ ("t1" /\ "t2")).nnf())
+//  val ba = create_graph(triggerEvent(2).nnf())
+  val ba = create_graph(X(("a" \/ ("a" /\ "b")) /\ X(G("a"))).nnf())                                // subsumed
+//  val ba = create_graph(F(X(("p" /\ X("c" /\ X(G("c")))) \/ (!"p" /\ X("c"/\ X(G("c")))))).nnf())   //bug
+//  val ba = create_graph((X("p") \/ X(!"p")).nnf())                                                  // pure
+  val g1 = MetaRewriting.Eager.winStay(ba.g, Seq(rewriteIntoSelf, rewriteSameOutgoing, rewriteSameIncoming, rewriteOutSelf))
+  val g2 = compressLabels(g1)
+  g2.plot()

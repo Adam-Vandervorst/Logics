@@ -1,6 +1,8 @@
 import be.adamv.picograph.graphs.DNIELMG.{DNIELMG, given}
 import be.adamv.picograph.graphs.PatchG.{C, PatchG, RewriteRule}
 import be.adamv.picograph.nodeId
+import Prop.*
+
 
 export be.adamv.picograph.algorithms.MetaRewriting
 
@@ -89,3 +91,17 @@ def rewriteOutSelf[A](g: DNIELMG[A]): Iterator[DNIELMG[A]] =
   val rpg = PatchG[Char, rhs.type](rhs)(List(r(0) -> r(0), r(0) -> r(0), C -> r(0), r(0) -> C, r(0) -> C))
 
   RewriteRule(lpg, rpg, Set(0 -> 0, 1 -> 0, 2 -> 1, 3 -> 1, 4 -> 2, 5 -> 2, 6 -> 3, 7 -> 4)).applyIt(g)
+
+
+def compressLabels[A](g: DNIELMG[Set[A]]): DNIELMG[Set[A]] =
+  val g_reduced = DNIELMG[Set[A]]()
+  for el <- g.labeling do
+    for label <- el(1).filter(lb => el(1).forall(l => !(l < lb))) do
+      g_reduced.foreignConnect(el(0)(0), el(0)(1), label)
+  g_reduced
+
+
+def printLabelsProp(g: DNIELMG[Set[String]]): Unit =
+  val g_reduced = DNIELMG[Set[String]]()
+  for el <- g.labeling do
+    println(el(1).map(label => label.map(Var(_)).fold(True)(And(_, _))).fold(False)(Or(_, _)).pretty())
